@@ -101,16 +101,16 @@ typedef struct {
   __IO uint32_t         AL3_WRITE_ADDR;
   __IO uint32_t         AL3_TRANSFER_COUNT;
   __IO uint32_t         AL3_READ_ADDR_TRIG;
-} DMA_Channel_Typedef;
+} DMA_Channel_TypeDef;
 
 typedef struct {
   __I  uint32_t         CTDREQ;
   __I  uint32_t         TCR;
   __I  uint32_t         resvd8[14];
-} DMA_Debug_Typedef;
+} DMA_Debug_TypeDef;
 
 typedef struct {
-  DMA_Channel_Typedef   CH[12];
+  DMA_Channel_TypeDef   CH[12];
   __I  uint32_t         resvd300[64];
   __IO uint32_t         INTR;
   __IO uint32_t         INTE0;
@@ -129,10 +129,10 @@ typedef struct {
   __IO uint32_t         CHAN_ABORT;
   __I  uint32_t         N_CHANNELS;
   __I  uint32_t         resvd44C[237];
-  DMA_Debug_Typedef     CH_DBG[12];
+  DMA_Debug_TypeDef     CH_DBG[12];
   __I  uint32_t         resvdB00[320];
   struct {
-    DMA_Channel_Typedef CH[12];
+    DMA_Channel_TypeDef CH[12];
     __I  uint32_t       resvd300[64];
     __IO uint32_t       INTR;
     __IO uint32_t       INTE0;
@@ -151,11 +151,11 @@ typedef struct {
     __IO uint32_t       CHAN_ABORT;
     __I  uint32_t       N_CHANNELS;
     __I  uint32_t       resvd44C[237];
-    DMA_Debug_Typedef   CH_DBG[12];
+    DMA_Debug_TypeDef   CH_DBG[12];
     __I  uint32_t       resvdB00[320];
   } XOR;
   struct {
-    DMA_Channel_Typedef CH[12];
+    DMA_Channel_TypeDef CH[12];
     __I  uint32_t       resvd300[64];
     __IO uint32_t       INTR;
     __IO uint32_t       INTE0;
@@ -174,11 +174,11 @@ typedef struct {
     __IO uint32_t       CHAN_ABORT;
     __I  uint32_t       N_CHANNELS;
     __I  uint32_t       resvd44C[237];
-    DMA_Debug_Typedef   CH_DBG[12];
+    DMA_Debug_TypeDef   CH_DBG[12];
     __I  uint32_t       resvdB00[320];
   } SET;
   struct {
-    DMA_Channel_Typedef CH[12];
+    DMA_Channel_TypeDef CH[12];
     __I  uint32_t       resvd300[64];
     __IO uint32_t       INTR;
     __IO uint32_t       INTE0;
@@ -197,7 +197,7 @@ typedef struct {
     __IO uint32_t       CHAN_ABORT;
     __I  uint32_t       N_CHANNELS;
     __I  uint32_t       resvd44C[237];
-    DMA_Debug_Typedef   CH_DBG[12];
+    DMA_Debug_TypeDef   CH_DBG[12];
     __I  uint32_t       resvdB00[320];
   } CLR;
 } DMA_TypeDef;
