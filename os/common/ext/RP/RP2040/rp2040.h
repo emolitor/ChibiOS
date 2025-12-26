@@ -482,7 +482,7 @@ typedef struct {
     __I  uint32_t         INTS;
     __I  uint32_t         resvd44[1007];
   } CLR;
-} TIMER_TypeDef;
+} TIMER0_TypeDef;
 
 typedef struct {
   __IO uint32_t         UARTDR;
@@ -1243,7 +1243,7 @@ typedef struct {
 #define __PADSUSER0_BASE                  (__APBPERIPH_BASE + 0x0001C000U)
 #define __PADSQSPI_BASE                   (__APBPERIPH_BASE + 0x00020000U)
 #define __PSM_BASE                        (__APBPERIPH_BASE + 0x00010000U)
-#define __TIMER_BASE                      (__APBPERIPH_BASE + 0x00054000U)
+#define __TIMER0_BASE                     (__APBPERIPH_BASE + 0x00054000U)
 #define __UART0_BASE                      (__APBPERIPH_BASE + 0x00034000U)
 #define __UART1_BASE                      (__APBPERIPH_BASE + 0x00038000U)
 #define __SPI0_BASE                       (__APBPERIPH_BASE + 0x0003C000U)
@@ -1275,7 +1275,7 @@ typedef struct {
 #define PSM                               ((PSM_TypeDef *)    __PSM_BASE)
 #define RESETS                            ((RESETS_TypeDef *) __RESETS_BASE)
 #define SIO                               ((SIO_TypeDef *)    __SIO_BASE)
-#define TIMER                             ((TIMER_TypeDef *)  __TIMER_BASE)
+#define TIMER0                            ((TIMER0_TypeDef *)  __TIMER0_BASE)
 #define UART0                             ((UART_TypeDef *)   __UART0_BASE)
 #define UART1                             ((UART_TypeDef *)   __UART1_BASE)
 #define RTC                               ((RTC_TypeDef *)    __RTC_BASE)

@@ -55,7 +55,7 @@
 #define RP_HAS_PIO2                         FALSE
 
 /* TIMER attributes.*/
-#define RP_HAS_TIMER                        TRUE
+#define RP_HAS_TIMER0                       TRUE
 #define RP_ST_NUM_ALARMS                    4
 
 /* RTC attributes.*/
