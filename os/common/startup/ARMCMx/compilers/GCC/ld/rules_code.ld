@@ -26,6 +26,8 @@ SECTIONS
         __vectors_base__ = .;
         KEEP(*(.vectors))
         __vectors_end__ = .;
+        /* embedded block for devices like RP2350, can be empty if not needed */
+        KEEP(*(.embedded_block))
     } > VECTORS_FLASH AT > VECTORS_FLASH_LMA
 
     .xtors : ALIGN(4)
