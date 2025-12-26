@@ -118,6 +118,22 @@ void PendSV_Handler(void) {
 /*===========================================================================*/
 
 /**
+ * @brief   Platform-specific port initialization hook.
+ * @details This is a weak function that can be overridden by platform-specific
+ *          code to perform additional initialization after the port is set up.
+ *          Called at the end of port_init() for each OS instance.
+ *
+ * @param[in, out] oip  pointer to the @p os_instance_t structure
+ *
+ * @notapi
+ */
+__attribute__((weak))
+void __port_platform_init(os_instance_t *oip) {
+
+  (void)oip;
+}
+
+/**
  * @brief   Port-related initialization code.
  *
  * @param[in, out] oip  pointer to the @p os_instance_t structure
@@ -125,8 +141,6 @@ void PendSV_Handler(void) {
  * @notapi
  */
 void port_init(os_instance_t *oip) {
-
-  (void)oip;
 
   /* Starting in a known IRQ configuration.*/
   port_suspend();
@@ -155,6 +169,9 @@ void port_init(os_instance_t *oip) {
   NVIC_SetPriority(SVCall_IRQn, CORTEX_PRIORITY_SVCALL);
 #endif
   NVIC_SetPriority(PendSV_IRQn, CORTEX_PRIORITY_PENDSV);
+
+  /* Platform-specific initialization hook.*/
+  __port_platform_init(oip);
 }
 
 /**
