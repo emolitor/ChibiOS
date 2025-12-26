@@ -33,6 +33,8 @@
 
 /**
  * @brief   Number of supported alarms.
+ * @note    RP2040 supports 4 alarms (TIMER0 only).
+ * @note    RP2350 supports 8 alarms (TIMER0 + TIMER1).
  */
 #define ST_LLD_NUM_ALARMS                   RP_ST_NUM_ALARMS
 
@@ -103,17 +105,90 @@
 #if !defined(RP_IRQ_TIMER_ALARM3_PRIORITY) || defined(__DOXYGEN__)
 #define RP_IRQ_TIMER_ALARM3_PRIORITY        2
 #endif
+
+#if (RP_ST_NUM_ALARMS > 4) || defined(__DOXYGEN__)
+/**
+ * @brief   TIMER alarm 4 IRQ priority (TIMER1 alarm 0).
+ */
+#if !defined(RP_IRQ_TIMER_ALARM4_PRIORITY) || defined(__DOXYGEN__)
+#define RP_IRQ_TIMER_ALARM4_PRIORITY        2
+#endif
+
+/**
+ * @brief   TIMER alarm 5 IRQ priority (TIMER1 alarm 1).
+ */
+#if !defined(RP_IRQ_TIMER_ALARM5_PRIORITY) || defined(__DOXYGEN__)
+#define RP_IRQ_TIMER_ALARM5_PRIORITY        2
+#endif
+
+/**
+ * @brief   TIMER alarm 6 IRQ priority (TIMER1 alarm 2).
+ */
+#if !defined(RP_IRQ_TIMER_ALARM6_PRIORITY) || defined(__DOXYGEN__)
+#define RP_IRQ_TIMER_ALARM6_PRIORITY        2
+#endif
+
+/**
+ * @brief   TIMER alarm 7 IRQ priority (TIMER1 alarm 3).
+ */
+#if !defined(RP_IRQ_TIMER_ALARM7_PRIORITY) || defined(__DOXYGEN__)
+#define RP_IRQ_TIMER_ALARM7_PRIORITY        2
+#endif
+#endif /* RP_ST_NUM_ALARMS > 4 */
 /** @} */
 
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
 
-
 #if (OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING) &&                           \
     (OSAL_ST_RESOLUTION != 32)
 #error "OSAL_ST_RESOLUTION must be 32 in OSAL_ST_MODE_FREERUNNING mode"
 #endif
+
+/*===========================================================================*/
+/* Multi-timer alarm mapping.                                                */
+/*===========================================================================*/
+
+/**
+ * @brief   Timer peripheral for counter reads.
+ * @note    On RP2350, TIMER0 and TIMER1 have independent 64-bit counters.
+ *          TIMER0 is used arbitrarily for system tick counter reads.
+ */
+#define RP_ST_COUNTER_TIM                   TIMER0
+
+#if RP_ST_NUM_ALARMS > 4
+/**
+ * @brief   Selects timer peripheral based on alarm number.
+ * @note    Alarms 0-3 use TIMER0, alarms 4-7 use TIMER1.
+ */
+#define RP_ST_TIM(alarm)                    ((alarm) < 4U ? TIMER0 : TIMER1)
+
+/**
+ * @brief   Converts logical alarm number to physical alarm index.
+ * @note    Maps alarm 0-3 to index 0-3, alarm 4-7 to index 0-3.
+ */
+#define RP_ST_ALARM_IDX(alarm)              ((alarm) & 3U)
+
+#if !defined(RP_HAS_TIMER1) || (RP_HAS_TIMER1 != TRUE)
+#error "RP_ST_NUM_ALARMS > 4 requires TIMER1 (not available on this platform)"
+#endif
+
+#else /* RP_ST_NUM_ALARMS <= 4 */
+
+/**
+ * @brief   Selects timer peripheral based on alarm number.
+ * @note    All alarms use TIMER0 on this platform.
+ */
+#define RP_ST_TIM(alarm)                    TIMER0
+
+/**
+ * @brief   Converts logical alarm number to physical alarm index.
+ * @note    Direct pass-through on single-timer platforms.
+ */
+#define RP_ST_ALARM_IDX(alarm)              (alarm)
+
+#endif /* RP_ST_NUM_ALARMS > 4 */
 
 #if OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING
 
@@ -170,7 +245,7 @@ extern "C" {
  */
 __STATIC_INLINE systime_t st_lld_get_counter(void) {
 
-  return (systime_t)TIMER0->TIMERAWL;
+  return (systime_t)RP_ST_COUNTER_TIM->TIMERAWL;
 }
 
 /**
@@ -184,9 +259,9 @@ __STATIC_INLINE systime_t st_lld_get_counter(void) {
  */
 __STATIC_INLINE void st_lld_start_alarm(systime_t abstime) {
 
-  TIMER0->ALARM[0]       = (uint32_t)abstime;
-  TIMER0->INTR           = (1U << 0);
-  TIMER0->INTE          |= (1U << 0);
+  RP_ST_TIM(0)->ALARM[0]  = (uint32_t)abstime;
+  RP_ST_TIM(0)->INTR      = (1U << 0);
+  RP_ST_TIM(0)->INTE     |= (1U << 0);
 }
 
 /**
@@ -196,7 +271,7 @@ __STATIC_INLINE void st_lld_start_alarm(systime_t abstime) {
  */
 __STATIC_INLINE void st_lld_stop_alarm(void) {
 
-  TIMER0->INTE          &= ~(1U << 0);
+  RP_ST_TIM(0)->INTE   &= ~(1U << 0);
 }
 
 /**
@@ -208,7 +283,7 @@ __STATIC_INLINE void st_lld_stop_alarm(void) {
  */
 __STATIC_INLINE void st_lld_set_alarm(systime_t abstime) {
 
-  TIMER0->ALARM[0]       = (uint32_t)abstime;
+  RP_ST_TIM(0)->ALARM[0] = (uint32_t)abstime;
 }
 
 /**
@@ -220,7 +295,7 @@ __STATIC_INLINE void st_lld_set_alarm(systime_t abstime) {
  */
 __STATIC_INLINE systime_t st_lld_get_alarm(void) {
 
-  return (systime_t)TIMER0->ALARM[0];
+  return (systime_t)RP_ST_TIM(0)->ALARM[0];
 }
 
 /**
@@ -234,7 +309,7 @@ __STATIC_INLINE systime_t st_lld_get_alarm(void) {
  */
 __STATIC_INLINE bool st_lld_is_alarm_active(void) {
 
-  return (bool)((TIMER0->INTE & (1U << 0)) != 0U);
+  return (bool)((RP_ST_TIM(0)->INTE & (1U << 0)) != 0U);
 }
 
 #if (ST_LLD_NUM_ALARMS > 1) || defined(__DOXYGEN__)
@@ -252,10 +327,11 @@ __STATIC_INLINE bool st_lld_is_alarm_active(void) {
  */
 __STATIC_INLINE void st_lld_start_alarm_n(unsigned alarm, systime_t abstime) {
 
+  unsigned idx = RP_ST_ALARM_IDX(alarm);
 
-  TIMER0->ALARM[alarm]   = (uint32_t)abstime;
-  TIMER0->INTR           = (1U << alarm);
-  TIMER0->INTE          |= (1U << alarm);
+  RP_ST_TIM(alarm)->ALARM[idx] = (uint32_t)abstime;
+  RP_ST_TIM(alarm)->INTR       = (1U << idx);
+  RP_ST_TIM(alarm)->INTE      |= (1U << idx);
 }
 
 /**
@@ -269,7 +345,7 @@ __STATIC_INLINE void st_lld_start_alarm_n(unsigned alarm, systime_t abstime) {
  */
 __STATIC_INLINE void st_lld_stop_alarm_n(unsigned alarm) {
 
-  TIMER0->INTE          &= ~(1U << alarm);
+  RP_ST_TIM(alarm)->INTE &= ~(1U << RP_ST_ALARM_IDX(alarm));
 }
 
 /**
@@ -284,7 +360,7 @@ __STATIC_INLINE void st_lld_stop_alarm_n(unsigned alarm) {
  */
 __STATIC_INLINE void st_lld_set_alarm_n(unsigned alarm, systime_t abstime) {
 
-  TIMER0->ALARM[alarm]   = (uint32_t)abstime;
+  RP_ST_TIM(alarm)->ALARM[RP_ST_ALARM_IDX(alarm)] = (uint32_t)abstime;
 }
 
 /**
@@ -299,7 +375,7 @@ __STATIC_INLINE void st_lld_set_alarm_n(unsigned alarm, systime_t abstime) {
  */
 __STATIC_INLINE systime_t st_lld_get_alarm_n(unsigned alarm) {
 
-  return (systime_t)TIMER0->ALARM[alarm];
+  return (systime_t)RP_ST_TIM(alarm)->ALARM[RP_ST_ALARM_IDX(alarm)];
 }
 
 /**
@@ -314,7 +390,7 @@ __STATIC_INLINE systime_t st_lld_get_alarm_n(unsigned alarm) {
  */
 static inline bool st_lld_is_alarm_active_n(unsigned alarm) {
 
-  return (bool)((TIMER0->INTE & (1U << alarm)) != 0U);
+  return (bool)((RP_ST_TIM(alarm)->INTE & (1U << RP_ST_ALARM_IDX(alarm))) != 0U);
 }
 #endif /* ST_LLD_NUM_ALARMS > 1 */
 #endif /* OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING */

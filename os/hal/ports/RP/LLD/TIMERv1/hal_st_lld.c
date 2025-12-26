@@ -58,10 +58,19 @@ typedef struct {
 #if (OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING) || defined(__DOXYGEN__)
 #if (ST_LLD_NUM_ALARMS > 1) || defined(__DOXYGEN__)
 static const alarm_irq_t alarm_irqs[ST_LLD_NUM_ALARMS] = {
+  /* TIMER0 alarms 0-3. */
   {RP_TIMER0_IRQ0_NUMBER, RP_IRQ_TIMER_ALARM0_PRIORITY},
   {RP_TIMER0_IRQ1_NUMBER, RP_IRQ_TIMER_ALARM1_PRIORITY},
   {RP_TIMER0_IRQ2_NUMBER, RP_IRQ_TIMER_ALARM2_PRIORITY},
   {RP_TIMER0_IRQ3_NUMBER, RP_IRQ_TIMER_ALARM3_PRIORITY}
+#if RP_ST_NUM_ALARMS > 4
+  /* TIMER1 alarms 4-7 (RP2350 only). */
+  ,
+  {RP_TIMER1_IRQ0_NUMBER, RP_IRQ_TIMER_ALARM4_PRIORITY},
+  {RP_TIMER1_IRQ1_NUMBER, RP_IRQ_TIMER_ALARM5_PRIORITY},
+  {RP_TIMER1_IRQ2_NUMBER, RP_IRQ_TIMER_ALARM6_PRIORITY},
+  {RP_TIMER1_IRQ3_NUMBER, RP_IRQ_TIMER_ALARM7_PRIORITY}
+#endif
 };
 #endif
 #endif
@@ -199,6 +208,117 @@ OSAL_IRQ_HANDLER(RP_TIMER0_IRQ3_HANDLER) {
 }
 #endif
 
+#if RP_ST_NUM_ALARMS > 4
+/*
+ * TIMER1 interrupt handlers for alarms 4-7 (RP2350 only).
+ */
+
+#if !defined(ST_TIMER_ALARM4_SUPPRESS_ISR)
+/**
+ * @brief   TIMER alarm 4 interrupt handler (TIMER1 alarm 0).
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(RP_TIMER1_IRQ0_HANDLER) {
+
+  OSAL_IRQ_PROLOGUE();
+
+  osalDbgAssert((TIMER1->INTS & TIMER_INTS_ALARM0) != 0U, "not pending");
+
+  TIMER1->INTR = TIMER_INTR_ALARM0;
+
+#if defined(ST_LLD_ALARM4_STATIC_CB)
+  ST_LLD_ALARM4_STATIC_CB();
+#else
+  if (st_callbacks[4] != NULL) {
+    st_callbacks[4](4U);
+  }
+#endif
+
+  OSAL_IRQ_EPILOGUE();
+}
+#endif
+
+#if !defined(ST_TIMER_ALARM5_SUPPRESS_ISR)
+/**
+ * @brief   TIMER alarm 5 interrupt handler (TIMER1 alarm 1).
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(RP_TIMER1_IRQ1_HANDLER) {
+
+  OSAL_IRQ_PROLOGUE();
+
+  osalDbgAssert((TIMER1->INTS & TIMER_INTS_ALARM1) != 0U, "not pending");
+
+  TIMER1->INTR = TIMER_INTR_ALARM1;
+
+#if defined(ST_LLD_ALARM5_STATIC_CB)
+  ST_LLD_ALARM5_STATIC_CB();
+#else
+  if (st_callbacks[5] != NULL) {
+    st_callbacks[5](5U);
+  }
+#endif
+
+  OSAL_IRQ_EPILOGUE();
+}
+#endif
+
+#if !defined(ST_TIMER_ALARM6_SUPPRESS_ISR)
+/**
+ * @brief   TIMER alarm 6 interrupt handler (TIMER1 alarm 2).
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(RP_TIMER1_IRQ2_HANDLER) {
+
+  OSAL_IRQ_PROLOGUE();
+
+  osalDbgAssert((TIMER1->INTS & TIMER_INTS_ALARM2) != 0U, "not pending");
+
+  TIMER1->INTR = TIMER_INTR_ALARM2;
+
+#if defined(ST_LLD_ALARM6_STATIC_CB)
+  ST_LLD_ALARM6_STATIC_CB();
+#else
+  if (st_callbacks[6] != NULL) {
+    st_callbacks[6](6U);
+  }
+#endif
+
+  OSAL_IRQ_EPILOGUE();
+}
+#endif
+
+#if !defined(ST_TIMER_ALARM7_SUPPRESS_ISR)
+/**
+ * @brief   TIMER alarm 7 interrupt handler (TIMER1 alarm 3).
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(RP_TIMER1_IRQ3_HANDLER) {
+
+  OSAL_IRQ_PROLOGUE();
+
+  osalDbgAssert((TIMER1->INTS & TIMER_INTS_ALARM3) != 0U, "not pending");
+
+  TIMER1->INTR = TIMER_INTR_ALARM3;
+
+#if defined(ST_LLD_ALARM7_STATIC_CB)
+  ST_LLD_ALARM7_STATIC_CB();
+#else
+  if (st_callbacks[7] != NULL) {
+    st_callbacks[7](7U);
+  }
+#endif
+
+  OSAL_IRQ_EPILOGUE();
+}
+#endif
+
+#endif /* RP_ST_NUM_ALARMS > 4 */
+
 #endif /* OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING */
 
 /*===========================================================================*/
@@ -227,6 +347,20 @@ void st_lld_init(void) {
   TIMER0->INTE      = 0U;
   TIMER0->INTR      = TIMER_INTR_ALARM3 | TIMER_INTR_ALARM2 |
                       TIMER_INTR_ALARM1 | TIMER_INTR_ALARM0;
+
+#if RP_ST_NUM_ALARMS > 4
+  /* Initialize TIMER1 for alarms 4-7 (RP2350 only).
+     Note: TIMER1 shares the same timebase as TIMER0, so we don't reset
+     the counter registers.*/
+  TIMER1->DBGPAUSE  = TIMER_DBGPAUSE_DBG0 | TIMER_DBGPAUSE_DBG1;
+  TIMER1->ALARM[0]  = 0U;
+  TIMER1->ALARM[1]  = 0U;
+  TIMER1->ALARM[2]  = 0U;
+  TIMER1->ALARM[3]  = 0U;
+  TIMER1->INTE      = 0U;
+  TIMER1->INTR      = TIMER_INTR_ALARM3 | TIMER_INTR_ALARM2 |
+                      TIMER_INTR_ALARM1 | TIMER_INTR_ALARM0;
+#endif
 
 #endif /* OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING */
 }
