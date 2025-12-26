@@ -60,7 +60,8 @@ typedef struct WDGDriver WDGDriver;
 typedef struct {
   /**
    * @brief   Configuration of the WATCHDOG LOAD register.
-   * @details See the RP2040 data sheet for details.
+   * @details Watchdog timeout in milliseconds.
+   *          See the RP2040/RP2350 data sheet for details.
    */
   uint32_t    				rlr;
 } WDGConfig;

@@ -16,7 +16,7 @@
 
 /**
  * @file    hal_wdg_lld.c
- * @brief   RP2040 watchdog low level driver source.
+ * @brief   RP2040/RP2350 watchdog low level driver source.
  *
  * @addtogroup WDG
  * @{
@@ -51,11 +51,20 @@ WDGDriver WDGD1;
  */
 static void set_wdg_counter(WDGDriver *wdgp) {
 
-  /* Set the time. */
+  /* Set the time in milliseconds. */
   uint32_t time = wdgp->config->rlr;
 
-  /* Due to a silicon bug (see errata RP2040-E1) WDG decrements at each edge.*/
-  time = ((time == 0U) ? 50 : time) * 2 * 1000;
+  /* Ensure minimum time. */
+  time = (time == 0U) ? 50 : time;
+
+#if defined(PICO_RP2040) && (PICO_RP2040 == 1)
+  /* Due to a silicon bug (see errata RP2040-E1) WDG decrements at each edge,
+     so the time must be multiplied by 2. This is fixed in RP2350. */
+  time = time * 2 * 1000;
+#else
+  /* RP2350 and later: no errata, time is in microseconds. */
+  time = time * 1000;
+#endif
 
   /* Set ceiling if greater than count capability.*/
   time = (time > WATCHDOG_CTRL_TIME) ? WATCHDOG_CTRL_TIME : time;
@@ -101,7 +110,9 @@ void wdg_lld_start(WDGDriver *wdgp) {
   /* Set the watchdog counter.*/
   set_wdg_counter(wdgp);
 
-  /* When watchdog fires reset everything except ROSC and XOS.*/
+  /* When watchdog fires reset everything except ROSC and XOSC.
+     The PSM bit assignments differ between RP2040 and RP2350. */
+#if defined(PICO_RP2040) && (PICO_RP2040 == 1)
   PSM->WDSEL =  PSM_ANY_PROC1                 |
                 PSM_ANY_PROC0                 |
                 PSM_ANY_SIO                   |
@@ -117,6 +128,29 @@ void wdg_lld_start(WDGDriver *wdgp) {
                 PSM_ANY_BUSFABRIC             |
                 PSM_ANY_RESETS                |
                 PSM_ANY_CLOCKS;
+#else
+  /* RP2350: More SRAM banks, no VREG_AND_CHIP_RESET, has BOOTRAM. */
+  PSM->WDSEL =  PSM_ANY_PROC1                 |
+                PSM_ANY_PROC0                 |
+                PSM_ANY_ACCESSCTRL            |
+                PSM_ANY_SIO                   |
+                PSM_ANY_XIP                   |
+                PSM_ANY_SRAM9                 |
+                PSM_ANY_SRAM8                 |
+                PSM_ANY_SRAM7                 |
+                PSM_ANY_SRAM6                 |
+                PSM_ANY_SRAM5                 |
+                PSM_ANY_SRAM4                 |
+                PSM_ANY_SRAM3                 |
+                PSM_ANY_SRAM2                 |
+                PSM_ANY_SRAM1                 |
+                PSM_ANY_SRAM0                 |
+                PSM_ANY_BOOTRAM               |
+                PSM_ANY_ROM                   |
+                PSM_ANY_BUSFABRIC             |
+                PSM_ANY_RESETS                |
+                PSM_ANY_CLOCKS;
+#endif
 
   /* Set control bits and enable WDG.*/
   wdgp->wdg->CTRL = WATCHDOG_CTRL_PAUSE_DBG0  |
