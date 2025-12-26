@@ -40,7 +40,7 @@
 typedef enum {
   NonMaskableInt_IRQn                   = -14,
   HardFault_IRQn                        = -13,
-  SVC_IRQn                              = -5,
+  SVCall_IRQn                           = -5,
   PendSV_IRQn                           = -2,
   SysTick_IRQn                          = -1,
   Vector_0n                             = 0,
@@ -116,7 +116,7 @@ typedef struct {
   __IO uint32_t         INTE0;
   __IO uint32_t         INTF0;
   __IO uint32_t         INTS0;
-  __I  uint32_t         resvd410;
+  __I  uint32_t         INTR1;
   __IO uint32_t         INTE1;
   __IO uint32_t         INTF1;
   __IO uint32_t         INTS1;
@@ -138,7 +138,7 @@ typedef struct {
     __IO uint32_t       INTE0;
     __IO uint32_t       INTF0;
     __IO uint32_t       INTS0;
-    __I  uint32_t       resvd410;
+    __I  uint32_t       INTR1;
     __IO uint32_t       INTE1;
     __IO uint32_t       INTF1;
     __IO uint32_t       INTS1;
@@ -161,7 +161,7 @@ typedef struct {
     __IO uint32_t       INTE0;
     __IO uint32_t       INTF0;
     __IO uint32_t       INTS0;
-    __I  uint32_t       resvd410;
+    __I  uint32_t       INTR1;
     __IO uint32_t       INTE1;
     __IO uint32_t       INTF1;
     __IO uint32_t       INTS1;
@@ -184,7 +184,7 @@ typedef struct {
     __IO uint32_t       INTE0;
     __IO uint32_t       INTF0;
     __IO uint32_t       INTS0;
-    __I  uint32_t       resvd410;
+    __I  uint32_t       INTR1;
     __IO uint32_t       INTE1;
     __IO uint32_t       INTF1;
     __IO uint32_t       INTS1;
