@@ -36,7 +36,10 @@
 
 #if (PAL_USE_WAIT == TRUE) || (PAL_USE_CALLBACKS == TRUE) || defined(__DOXYGEN__)
 /**
- * @brief   Event records for the 30 GPIO lines.
+ * @brief   Event records for the GPIO lines.
+ * @note    The number of lines is platform-dependent:
+ *          - RP2040: 30 lines (GPIO 0-29)
+ *          - RP2350: 30 lines by default, up to 48 (GPIO 0-47)
  */
 palevent_t _pal_events[RP_GPIO_NUM_LINES];
 #endif
