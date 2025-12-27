@@ -1,9 +1,9 @@
 # List of the ChibiOS generic RP2040 startup and CMSIS files.
-STARTUPSRC = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/crt1.c
-          
+STARTUPSRC = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/crt1.c \
+             $(CHIBIOS)/os/common/startup/ARMCMx/devices/RP2040/rp2040_boot2.c
+
 STARTUPASM = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/crt0_v6m.S \
-             $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/vectors.S \
-             $(CHIBIOS)/os/common/startup/ARMCMx/devices/RP2040/bs2_default_padded_checksummed.S
+             $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/vectors.S
 
 STARTUPINC = $(CHIBIOS)/os/common/portability/GCC \
              $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC \
