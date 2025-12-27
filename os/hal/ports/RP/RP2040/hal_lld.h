@@ -29,10 +29,7 @@
  * Registry definitions.
  */
 #include "rp_registry.h"
-
-/* From Pico-SDK */
-#include "hardware/clocks.h"
-#include "pico/runtime_init.h"
+#include "rp_clocks.h"
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -127,16 +124,16 @@
  * @name    Various clock points.
  * @{
  */
-#define RP_GPOUT0_CLK           hal_lld_get_clock_point(clk_gpout0)
-#define RP_GPOUT1_CLK           hal_lld_get_clock_point(clk_gpout1)
-#define RP_GPOUT2_CLK           hal_lld_get_clock_point(clk_gpout2)
-#define RP_GPOUT3_CLK           hal_lld_get_clock_point(clk_gpout3)
-#define RP_REF_CLK              hal_lld_get_clock_point(clk_ref)
-#define RP_CORE_CLK             hal_lld_get_clock_point(clk_sys)
-#define RP_PERI_CLK             hal_lld_get_clock_point(clk_peri)
-#define RP_USB_CLK              hal_lld_get_clock_point(clk_usb)
-#define RP_ADC_CLK              hal_lld_get_clock_point(clk_adc)
-#define RP_RTC_CLK              hal_lld_get_clock_point(clk_rtc)
+#define RP_GPOUT0_CLK           hal_lld_get_clock_point(RP_CLK_GPOUT0)
+#define RP_GPOUT1_CLK           hal_lld_get_clock_point(RP_CLK_GPOUT1)
+#define RP_GPOUT2_CLK           hal_lld_get_clock_point(RP_CLK_GPOUT2)
+#define RP_GPOUT3_CLK           hal_lld_get_clock_point(RP_CLK_GPOUT3)
+#define RP_REF_CLK              hal_lld_get_clock_point(RP_CLK_REF)
+#define RP_CORE_CLK             hal_lld_get_clock_point(RP_CLK_SYS)
+#define RP_PERI_CLK             hal_lld_get_clock_point(RP_CLK_PERI)
+#define RP_USB_CLK              hal_lld_get_clock_point(RP_CLK_USB)
+#define RP_ADC_CLK              hal_lld_get_clock_point(RP_CLK_ADC)
+#define RP_RTC_CLK              hal_lld_get_clock_point(RP_CLK_RTC)
 /** @} */
 
 /*===========================================================================*/
@@ -221,9 +218,9 @@ __STATIC_INLINE bool hal_lld_clock_switch_mode(const halclkcfg_t *ccp) {
  */
 __STATIC_INLINE halfreq_t hal_lld_get_clock_point(halclkpt_t clkpt) {
 
-  osalDbgAssert(clkpt < CLK_COUNT, "invalid clock point");
+  osalDbgAssert(clkpt < RP_CLK_COUNT, "invalid clock point");
 
-  return clock_get_hz(clkpt);
+  return rp_clock_get_hz(clkpt);
 }
 #endif /* defined(HAL_LLD_USE_CLOCK_MANAGEMENT) */
 

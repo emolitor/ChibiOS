@@ -23,10 +23,16 @@
  */
 
 #include "hal.h"
+#include "rp_clocks.h"
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
+
+/**
+ * @brief   Number of elements in an array.
+ */
+#define ARRAY_SIZE(x)   (sizeof(x) / sizeof((x)[0]))
 
 /*===========================================================================*/
 /* Driver exported variables.                                                */
@@ -80,7 +86,7 @@ static void start_core1(void) {
     response = fifoBlockingRead();
     /* Checking response, going forward or back to first step.*/
     seq = cmd == response ? seq + 1U : 0U;
-  } while (seq < count_of(cmd_sequence));
+  } while (seq < ARRAY_SIZE(cmd_sequence));
 }
 #endif
 
@@ -100,7 +106,7 @@ static void start_core1(void) {
 void hal_lld_init(void) {
 
 #if RP_NO_INIT == FALSE
-  runtime_init_clocks();
+  rp_clocks_init();
 
   SystemCoreClock = RP_CORE_CLK;
 
